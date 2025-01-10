@@ -42,6 +42,24 @@ async function addParty(party) {
     }
 }
 
+//remove event
+const removeEvent = async (eventId) => {
+    try {
+        // TODO
+        const promise = await fetch(`${API_URL}/${eventId}`, {
+            method: 'DELETE'
+        })
+        
+        console.log(`Removed event #${eventId}`); // Debug: Log the removed event
+
+    } catch (err) {
+        console.error(
+            `Whoops, trouble removing event #${eventId} from the roster!`,
+            err
+        );
+    }
+};
+
 // === Render ===
 
 /** Renders parties from state */
@@ -49,9 +67,34 @@ function renderParties() {
     const ul = document.getElementById("parties")
     ul.innerHTML = '' //makes sure the contents are cleared 
     state.parties.forEach((party) => {
-        const li = document.createElement("li");
-        li.textContent = party.name;
-        ul.appendChild(li);
+        const partyName = document.createElement("li");
+        partyName.textContent = party.name;
+        ul.appendChild(partyName);
+
+        const partyDate = document.createElement("li");
+        // partyDate.textContent = Date.parse(party.date);
+        const date = new Date (party.date)
+        const hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, "0");
+        partyDate.textContent = date.toLocaleDateString() + " " + hours + ": " + minutes
+
+        ul.appendChild(partyDate);
+
+        const partyDescription = document.createElement("li");
+        partyDescription.textContent = party.description;
+        ul.appendChild(partyDescription);
+
+        //delete button
+        const deleteButton = document.createElement('button');
+        deleteButton.innerHTML = 'delete'
+        deleteButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+            await removeEvent(party.id); //removes event 
+            await getParties(); // refresh state with updated list 
+            renderParties();
+        })
+        //append button to li
+        ul.appendChild(deleteButton)
     })
 }
 
